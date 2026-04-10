@@ -50,13 +50,14 @@
   }
 }
 
+/* MODIFICATION: Suppression de la largeur fixe pour le plein écran */
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0;
   text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+  border-inline: none; /* Suppression de la bordure */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -64,6 +65,7 @@
 
 body {
   margin: 0;
+  min-height: 100vh;
 }
 
 h1,

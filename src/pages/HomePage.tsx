@@ -218,7 +218,7 @@ function StatutBadge({ statut, color, bg }: { statut: string; color: string; bg:
 // PAGE PRINCIPALE
 // ============================================================
 export default function HomePage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const isTransporteur = useHasRole('transporteur');
   const navigate = useNavigate();
 
@@ -235,388 +235,271 @@ export default function HomePage() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
-  // ----------------------------------------------------------
-  // RENDU
-  // ----------------------------------------------------------
+  // MODIFICATION: Plus de navbar ici, elle est dans AppLayout
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f8fafc',
-      fontFamily: "'Segoe UI', system-ui, sans-serif",
-    }}>
+    <div style={{ width: '100%' }}>
+      {/* Salutation */}
+      <div style={{ marginBottom: '28px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>
+          Bonjour, {user?.prenom} 👋
+        </h1>
+        <p style={{ fontSize: '14px', color: '#64748b' }}>
+          {isTransporteur
+            ? 'Voici un aperçu de votre activité du jour.'
+            : 'Que souhaitez-vous faire aujourd\'hui ?'}
+        </p>
+      </div>
 
-      {/* ====== NAVBAR ====== */}
-      <nav style={{
-        background: '#fff',
-        borderBottom: '1px solid #e2e8f0',
-        padding: '0 32px',
-        height: '60px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-      }}>
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '34px', height: '34px', background: '#2563eb',
-            borderRadius: '9px', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-              <rect x="1" y="3" width="15" height="13" rx="2"/>
-              <path d="M16 8h4l3 5v3h-7V8z"/>
-              <circle cx="5.5" cy="18.5" r="2.5"/>
-              <circle cx="18.5" cy="18.5" r="2.5"/>
-            </svg>
-          </div>
-          <span style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>
-            GP Transporteurs
-          </span>
-        </div>
-
-        {/* Nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {(isTransporteur ? SHORTCUTS_TRANSPORTEUR : SHORTCUTS_CLIENT).slice(0, 4).map((s) => (
-            <button
-              key={s.path}
-              onClick={() => navigate(s.path)}
+      {/* Barre de recherche rapide (CLIENT uniquement) */}
+      {!isTransporteur && (
+        <form
+          onSubmit={handleSearch}
+          style={{
+            background: '#fff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '14px',
+            padding: '20px 24px',
+            marginBottom: '28px',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          }}
+        >
+          <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>
+            🔍 Recherche rapide
+          </p>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Entrez une destination (ex : Thiès, Saint-Louis...)"
               style={{
-                background: 'none', border: 'none',
-                padding: '6px 12px', borderRadius: '7px',
-                fontSize: '13px', color: '#374151',
-                cursor: 'pointer', fontWeight: 500,
+                flex: 1, padding: '10px 14px',
+                border: '1.5px solid #e5e7eb', borderRadius: '9px',
+                fontSize: '14px', color: '#111827', outline: 'none',
+                transition: 'border-color 0.15s',
+              }}
+              onFocus={(e) => (e.target.style.borderColor = '#2563eb')}
+              onBlur={(e)  => (e.target.style.borderColor = '#e5e7eb')}
+            />
+            <button
+              type="submit"
+              style={{
+                padding: '10px 22px',
+                background: '#2563eb', color: '#fff',
+                border: 'none', borderRadius: '9px',
+                fontSize: '14px', fontWeight: 600,
+                cursor: 'pointer', whiteSpace: 'nowrap',
                 transition: 'background 0.15s',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f5f9')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#1d4ed8')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#2563eb')}
             >
-              {s.label}
+              Rechercher
             </button>
+          </div>
+        </form>
+      )}
+
+      {/* Statistiques */}
+      <section style={{ marginBottom: '28px' }}>
+        <h2 style={{ fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '14px' }}>
+          Vue d'ensemble
+        </h2>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '14px',
+        }}>
+          {stats.map((s) => (
+            <StatCard key={s.label} {...s} />
           ))}
         </div>
+      </section>
 
-        {/* User menu */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '32px', height: '32px', borderRadius: '50%',
-              background: isTransporteur ? '#fffbeb' : '#eff6ff',
-              border: `2px solid ${isTransporteur ? '#fcd34d' : '#93c5fd'}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '13px', fontWeight: 700,
-              color: isTransporteur ? '#d97706' : '#2563eb',
-            }}>
-              {user?.prenom?.[0]}{user?.nom?.[0]}
-            </div>
-            <div style={{ lineHeight: 1.3 }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>
-                {user?.prenom} {user?.nom}
-              </div>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                {isTransporteur ? 'Transporteur' : 'Client'}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            style={{
-              background: 'none', border: '1px solid #e2e8f0',
-              borderRadius: '7px', padding: '5px 11px',
-              fontSize: '12px', color: '#64748b',
-              cursor: 'pointer', fontWeight: 500,
-              transition: 'all 0.15s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#ef4444';
-              e.currentTarget.style.color = '#ef4444';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#e2e8f0';
-              e.currentTarget.style.color = '#64748b';
-            }}
-          >
-            Déconnexion
-          </button>
-        </div>
-      </nav>
+      {/* Grille principale : Raccourcis + Commandes */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1.6fr',
+        gap: '20px',
+        alignItems: 'start',
+      }}>
 
-      {/* ====== CONTENU PRINCIPAL ====== */}
-      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 24px' }}>
-
-        {/* ---- Salutation ---- */}
-        <div style={{ marginBottom: '28px' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>
-            Bonjour, {user?.prenom} 👋
-          </h1>
-          <p style={{ fontSize: '14px', color: '#64748b' }}>
-            {isTransporteur
-              ? 'Voici un aperçu de votre activité du jour.'
-              : 'Que souhaitez-vous faire aujourd\'hui ?'}
-          </p>
-        </div>
-
-        {/* ---- Barre de recherche rapide (CLIENT uniquement) ---- */}
-        {!isTransporteur && (
-          <form
-            onSubmit={handleSearch}
-            style={{
-              background: '#fff',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '20px 24px',
-              marginBottom: '28px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-            }}
-          >
-            <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>
-              🔍 Recherche rapide
-            </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Entrez une destination (ex : Thiès, Saint-Louis...)"
-                style={{
-                  flex: 1, padding: '10px 14px',
-                  border: '1.5px solid #e5e7eb', borderRadius: '9px',
-                  fontSize: '14px', color: '#111827', outline: 'none',
-                  transition: 'border-color 0.15s',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = '#2563eb')}
-                onBlur={(e)  => (e.target.style.borderColor = '#e5e7eb')}
-              />
-              <button
-                type="submit"
-                style={{
-                  padding: '10px 22px',
-                  background: '#2563eb', color: '#fff',
-                  border: 'none', borderRadius: '9px',
-                  fontSize: '14px', fontWeight: 600,
-                  cursor: 'pointer', whiteSpace: 'nowrap',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#1d4ed8')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = '#2563eb')}
-              >
-                Rechercher
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* ---- Statistiques ---- */}
-        <section style={{ marginBottom: '28px' }}>
+        {/* Raccourcis */}
+        <section>
           <h2 style={{ fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '14px' }}>
-            Vue d'ensemble
+            Accès rapide
           </h2>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '14px',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '10px',
           }}>
-            {stats.map((s) => (
-              <StatCard key={s.label} {...s} />
+            {shortcuts.map((s) => (
+              <ShortcutCard key={s.path} {...s} />
             ))}
           </div>
         </section>
 
-        {/* ---- Grille principale : Raccourcis + Commandes ---- */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1.6fr',
-          gap: '20px',
-          alignItems: 'start',
-        }}>
-
-          {/* Raccourcis */}
-          <section>
-            <h2 style={{ fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '14px' }}>
-              Accès rapide
+        {/* Dernières commandes */}
+        <section>
+          <div style={{
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', marginBottom: '14px',
+          }}>
+            <h2 style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>
+              {isTransporteur ? 'Dernières commandes reçues' : 'Mes dernières commandes'}
             </h2>
+            <button
+              onClick={() => navigate('/commandes')}
+              style={{
+                background: 'none', border: 'none',
+                fontSize: '12px', color: '#2563eb',
+                cursor: 'pointer', fontWeight: 500,
+                padding: 0,
+              }}
+            >
+              Voir tout →
+            </button>
+          </div>
+
+          <div style={{
+            background: '#fff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          }}>
+            {/* En-tête tableau */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '10px',
+              gridTemplateColumns: isTransporteur ? '1fr 1fr 1fr 1fr' : '1fr 1fr 1fr 1fr',
+              padding: '10px 16px',
+              background: '#f8fafc',
+              borderBottom: '1px solid #e2e8f0',
             }}>
-              {shortcuts.map((s) => (
-                <ShortcutCard key={s.path} {...s} />
+              {['N° Commande', 'Destination', isTransporteur ? 'Client' : 'Transporteur', 'Statut'].map((h) => (
+                <span key={h} style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  {h}
+                </span>
               ))}
             </div>
-          </section>
 
-          {/* Dernières commandes */}
-          <section>
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              justifyContent: 'space-between', marginBottom: '14px',
-            }}>
-              <h2 style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>
-                {isTransporteur ? 'Dernières commandes reçues' : 'Mes dernières commandes'}
-              </h2>
-              <button
-                onClick={() => navigate('/commandes')}
+            {/* Lignes */}
+            {commandes.map((cmd, i) => (
+              <div
+                key={cmd.id}
+                onClick={() => navigate(`/commandes`)}
                 style={{
-                  background: 'none', border: 'none',
-                  fontSize: '12px', color: '#2563eb',
-                  cursor: 'pointer', fontWeight: 500,
-                  padding: 0,
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                  padding: '13px 16px',
+                  borderBottom: i < commandes.length - 1 ? '1px solid #f1f5f9' : 'none',
+                  cursor: 'pointer',
+                  transition: 'background 0.1s',
+                  alignItems: 'center',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#f8fafc')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                Voir tout →
-              </button>
-            </div>
-
-            <div style={{
-              background: '#fff',
-              border: '1px solid #e2e8f0',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-            }}>
-              {/* En-tête tableau */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: isTransporteur ? '1fr 1fr 1fr 1fr' : '1fr 1fr 1fr 1fr',
-                padding: '10px 16px',
-                background: '#f8fafc',
-                borderBottom: '1px solid #e2e8f0',
-              }}>
-                {['N° Commande', 'Destination', isTransporteur ? 'Client' : 'Transporteur', 'Statut'].map((h) => (
-                  <span key={h} style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    {h}
-                  </span>
-                ))}
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#2563eb' }}>
+                  {cmd.id}
+                </span>
+                <span style={{ fontSize: '13px', color: '#374151' }}>
+                  {cmd.destination}
+                </span>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  {'client' in cmd ? cmd.client : cmd.transporteur}
+                </span>
+                <StatutBadge
+                  statut={cmd.statut}
+                  color={cmd.statutColor}
+                  bg={cmd.statutBg}
+                />
               </div>
+            ))}
+          </div>
+        </section>
+      </div>
 
-              {/* Lignes */}
-              {commandes.map((cmd, i) => (
-                <div
-                  key={cmd.id}
-                  onClick={() => navigate(`/commandes`)}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                    padding: '13px 16px',
-                    borderBottom: i < commandes.length - 1 ? '1px solid #f1f5f9' : 'none',
-                    cursor: 'pointer',
-                    transition: 'background 0.1s',
-                    alignItems: 'center',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f8fafc')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#2563eb' }}>
-                    {cmd.id}
-                  </span>
-                  <span style={{ fontSize: '13px', color: '#374151' }}>
-                    {cmd.destination}
-                  </span>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>
-                    {'client' in cmd ? cmd.client : cmd.transporteur}
-                  </span>
-                  <StatutBadge
-                    statut={cmd.statut}
-                    color={cmd.statutColor}
-                    bg={cmd.statutBg}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
+      {/* Bannière spécifique transporteur */}
+      {isTransporteur && (
+        <div style={{
+          marginTop: '24px',
+          background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
+          borderRadius: '14px',
+          padding: '24px 28px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          color: '#fff',
+        }}>
+          <div>
+            <p style={{ fontSize: '15px', fontWeight: 700, marginBottom: '4px' }}>
+              Nouveau rendez-vous en attente
+            </p>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)' }}>
+              Vous avez 1 demande de rendez-vous qui nécessite votre confirmation.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/rendez-vous')}
+            style={{
+              background: '#fff', color: '#1d4ed8',
+              border: 'none', borderRadius: '9px',
+              padding: '10px 20px', fontSize: '13px',
+              fontWeight: 600, cursor: 'pointer',
+              whiteSpace: 'nowrap', flexShrink: 0,
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+          >
+            Voir les demandes
+          </button>
         </div>
+      )}
 
-        {/* ---- Bannière spécifique transporteur ---- */}
-        {isTransporteur && (
-          <div style={{
-            marginTop: '24px',
-            background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
-            borderRadius: '14px',
-            padding: '24px 28px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            color: '#fff',
-          }}>
-            <div>
-              <p style={{ fontSize: '15px', fontWeight: 700, marginBottom: '4px' }}>
-                Nouveau rendez-vous en attente
-              </p>
-              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)' }}>
-                Vous avez 1 demande de rendez-vous qui nécessite votre confirmation.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate('/rendez-vous')}
-              style={{
-                background: '#fff', color: '#1d4ed8',
-                border: 'none', borderRadius: '9px',
-                padding: '10px 20px', fontSize: '13px',
-                fontWeight: 600, cursor: 'pointer',
-                whiteSpace: 'nowrap', flexShrink: 0,
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-            >
-              Voir les demandes
-            </button>
+      {/* Bannière spécifique client */}
+      {!isTransporteur && (
+        <div style={{
+          marginTop: '24px',
+          background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+          border: '1px solid #bbf7d0',
+          borderRadius: '14px',
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <div>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: '#15803d', marginBottom: '3px' }}>
+              Commande CMD-001 en cours de livraison
+            </p>
+            <p style={{ fontSize: '13px', color: '#16a34a' }}>
+              Votre colis est en route vers Thiès — livraison prévue aujourd'hui.
+            </p>
           </div>
-        )}
+          <button
+            onClick={() => navigate('/suivi')}
+            style={{
+              background: '#16a34a', color: '#fff',
+              border: 'none', borderRadius: '9px',
+              padding: '9px 18px', fontSize: '13px',
+              fontWeight: 600, cursor: 'pointer',
+              whiteSpace: 'nowrap', flexShrink: 0,
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#15803d')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#16a34a')}
+          >
+            Suivre →
+          </button>
+        </div>
+      )}
 
-        {/* ---- Bannière spécifique client ---- */}
-        {!isTransporteur && (
-          <div style={{
-            marginTop: '24px',
-            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-            border: '1px solid #bbf7d0',
-            borderRadius: '14px',
-            padding: '20px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-            <div>
-              <p style={{ fontSize: '14px', fontWeight: 700, color: '#15803d', marginBottom: '3px' }}>
-                Commande CMD-001 en cours de livraison
-              </p>
-              <p style={{ fontSize: '13px', color: '#16a34a' }}>
-                Votre colis est en route vers Thiès — livraison prévue aujourd'hui.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate('/suivi')}
-              style={{
-                background: '#16a34a', color: '#fff',
-                border: 'none', borderRadius: '9px',
-                padding: '9px 18px', fontSize: '13px',
-                fontWeight: 600, cursor: 'pointer',
-                whiteSpace: 'nowrap', flexShrink: 0,
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#15803d')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = '#16a34a')}
-            >
-              Suivre →
-            </button>
-          </div>
-        )}
-
-      </main>
-
-      {/* Responsive */}
       <style>{`
         @media (max-width: 768px) {
-          main > div[style*="grid-template-columns: 1fr 1.6fr"] {
+          div[style*="grid-template-columns: 1fr 1.6fr"] {
             grid-template-columns: 1fr !important;
           }
         }

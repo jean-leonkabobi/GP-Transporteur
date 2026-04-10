@@ -2,12 +2,16 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, PublicOnlyRoute } from './components/common/ProtectedRoute';
 
+// Components
+import { Navbar } from './components/common/Navbar';
+import { Footer } from './components/common/Footer';
+
 // Pages auth
 import LoginPage          from './pages/LoginPage';
 import RegisterPage       from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 
-// Pages app (placeholders — à remplacer au fur et à mesure)
+// Pages app
 import HomePage            from './pages/HomePage';
 import RecherchePage       from './pages/RecherchePage';
 import CommandePage        from './pages/CommandePage';
@@ -16,8 +20,33 @@ import RendezVousPage      from './pages/RendezVousPage';
 import SuiviPage           from './pages/SuiviPage';
 import MonComptePage       from './pages/MonComptePage';
 
+// Layout component pour les pages authentifiées
+function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+      width: '100%',
+      background: '#f8fafc',
+    }}>
+      <Navbar />
+      <main style={{
+        flex: 1,
+        width: '100%',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        padding: '24px',
+      }}>
+        {children}
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 // ============================================================
-// PLACEHOLDER — retire ce composant quand une vraie page existe
+// PLACEHOLDER
 // ============================================================
 function ComingSoon({ title }: { title: string }) {
   return (
@@ -64,10 +93,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
 
-          {/* ------------------------------------------------ */}
-          {/* ROUTES PUBLIQUES UNIQUEMENT                       */}
-          {/* (redirigent vers dashboard si déjà connecté)     */}
-          {/* ------------------------------------------------ */}
+          {/* ROUTES PUBLIQUES */}
           <Route path="/login" element={
             <PublicOnlyRoute>
               <LoginPage />
@@ -86,72 +112,81 @@ export default function App() {
             </PublicOnlyRoute>
           }/>
 
-          {/* ------------------------------------------------ */}
-          {/* ROUTES PRIVÉES — accessibles à tous les rôles    */}
-          {/* ------------------------------------------------ */}
+          {/* ROUTES PRIVÉES AVEC LAYOUT */}
           <Route path="/" element={
             <ProtectedRoute>
-              <HomePage />
+              <AppLayout>
+                <HomePage />
+              </AppLayout>
             </ProtectedRoute>
           }/>
 
           <Route path="/recherche" element={
             <ProtectedRoute>
-              <RecherchePage />
+              <AppLayout>
+                <RecherchePage />
+              </AppLayout>
             </ProtectedRoute>
           }/>
 
           <Route path="/commandes" element={
             <ProtectedRoute>
-              <CommandePage />
+              <AppLayout>
+                <CommandePage />
+              </AppLayout>
             </ProtectedRoute>
           }/>
 
           <Route path="/commandes/nouvelle" element={
             <ProtectedRoute>
-              <NouvelleCommandePage />
+              <AppLayout>
+                <NouvelleCommandePage />
+              </AppLayout>
             </ProtectedRoute>
           }/>
 
           <Route path="/rendez-vous" element={
             <ProtectedRoute>
-              <RendezVousPage />
+              <AppLayout>
+                <RendezVousPage />
+              </AppLayout>
             </ProtectedRoute>
           }/>
 
           <Route path="/suivi" element={
             <ProtectedRoute>
-              <SuiviPage />
+              <AppLayout>
+                <SuiviPage />
+              </AppLayout>
             </ProtectedRoute>
           }/>
 
           <Route path="/mon-compte" element={
             <ProtectedRoute>
-              <MonComptePage />
+              <AppLayout>
+                <MonComptePage />
+              </AppLayout>
             </ProtectedRoute>
           }/>
 
-          {/* ------------------------------------------------ */}
-          {/* ROUTES PRIVÉES — réservées aux transporteurs     */}
-          {/* ------------------------------------------------ */}
+          {/* ROUTES SPÉCIFIQUES */}
           <Route path="/dashboard/transporteur" element={
             <ProtectedRoute requiredRole="transporteur">
-              <ComingSoon title="Dashboard Transporteur" />
+              <AppLayout>
+                <ComingSoon title="Dashboard Transporteur" />
+              </AppLayout>
             </ProtectedRoute>
           }/>
 
-          {/* ------------------------------------------------ */}
-          {/* ROUTES PRIVÉES — réservées aux clients           */}
-          {/* ------------------------------------------------ */}
           <Route path="/dashboard/client" element={
             <ProtectedRoute requiredRole="client">
-              <ComingSoon title="Dashboard Client" />
+              <AppLayout>
+                <ComingSoon title="Dashboard Client" />
+              </AppLayout>
             </ProtectedRoute>
           }/>
 
-          {/* ------------------------------------------------ */}
-          {/* FALLBACK — 404                                    */}
-          {/* ------------------------------------------------ */}
+          {/* FALLBACK */}
           <Route path="*" element={<Navigate to="/" replace />}/>
 
         </Routes>
