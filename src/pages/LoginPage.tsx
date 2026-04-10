@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import type { LoginPayload } from '../types/auth.types';
+import loginBg from '../assets/login-bg.jpg'; 
 
 // ============================================================
 // COMPOSANTS UI LOCAUX
@@ -166,82 +167,101 @@ export default function LoginPage() {
   return (
     <div
       style={{
-        minHeight: '100vh',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         display: 'flex',
-        background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
         fontFamily: "'Segoe UI', system-ui, sans-serif",
+        overflow: 'hidden',
       }}
     >
-      {/* ---- Panneau gauche (illustration) ---- */}
+      {/* ---- Panneau gauche avec IMAGE au lieu du dégradé ---- */}
       <div
         style={{
           flex: 1,
-          background: 'linear-gradient(160deg, #1d4ed8 0%, #1e40af 50%, #1e3a8a 100%)',
+          backgroundImage: `url(${loginBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '60px 48px',
           color: '#fff',
+          position: 'relative',
         }}
         className="left-panel"
       >
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '56px' }}>
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-              <rect x="1" y="3" width="15" height="13" rx="2"/>
-              <path d="M16 8h4l3 5v3h-7V8z"/>
-              <circle cx="5.5" cy="18.5" r="2.5"/>
-              <circle cx="18.5" cy="18.5" r="2.5"/>
-            </svg>
+        {/* Overlay semi-transparent pour que le texte soit lisible */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 60%)',
+          zIndex: 1,
+        }} />
+        
+        {/* Contenu au-dessus de l'overlay */}
+        <div style={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '56px', justifyContent: 'center' }}>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+                <rect x="1" y="3" width="15" height="13" rx="2"/>
+                <path d="M16 8h4l3 5v3h-7V8z"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/>
+                <circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+            </div>
+            <span style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.3px' }}>
+              GP Transporteurs
+            </span>
           </div>
-          <span style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.3px' }}>
+
+          {/* Titre principal */}
+          <h1 style={{ 
+            fontSize: '32px', 
+            fontWeight: 700, 
+            marginBottom: '16px',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
             GP Transporteurs
-          </span>
+          </h1>
+          
+          <h2 style={{ 
+            fontSize: '24px', 
+            fontWeight: 600, 
+            marginBottom: '16px',
+            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+          }}>
+            Connectez-vous à votre espace
+          </h2>
+          
+          <p style={{ 
+            fontSize: '16px', 
+            color: 'rgba(255,255,255,0.9)', 
+            maxWidth: '400px', 
+            margin: '0 auto',
+            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+          }}>
+            Accédez à vos commandes, suivez vos livraisons et gérez vos rendez-vous en temps réel.
+          </p>
         </div>
-
-        {/* Illustration SVG */}
-        <svg width="260" height="200" viewBox="0 0 260 200" style={{ marginBottom: '40px', opacity: 0.92 }}>
-          {/* Route */}
-          <path d="M0 160 Q130 120 260 160" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="40" strokeLinecap="round"/>
-          <path d="M0 160 Q130 120 260 160" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="2" strokeDasharray="12 8"/>
-          {/* Camion */}
-          <rect x="80" y="105" width="60" height="35" rx="6" fill="rgba(255,255,255,0.9)"/>
-          <rect x="140" y="113" width="30" height="27" rx="4" fill="rgba(255,255,255,0.7)"/>
-          <circle cx="95" cy="142" r="8" fill="rgba(255,255,255,0.95)" stroke="#1d4ed8" strokeWidth="2"/>
-          <circle cx="125" cy="142" r="8" fill="rgba(255,255,255,0.95)" stroke="#1d4ed8" strokeWidth="2"/>
-          <circle cx="160" cy="142" r="8" fill="rgba(255,255,255,0.95)" stroke="#1d4ed8" strokeWidth="2"/>
-          {/* Colis */}
-          <rect x="90" y="112" width="16" height="16" rx="3" fill="#93c5fd"/>
-          <rect x="110" y="112" width="16" height="16" rx="3" fill="#60a5fa"/>
-          {/* Destination pin */}
-          <circle cx="200" cy="72" r="14" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
-          <circle cx="200" cy="72" r="6" fill="#fff"/>
-          <path d="M200 86 L200 100" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
-          {/* Points déco */}
-          <circle cx="40"  cy="60" r="4" fill="rgba(255,255,255,0.3)"/>
-          <circle cx="220" cy="40" r="3" fill="rgba(255,255,255,0.25)"/>
-          <circle cx="60"  cy="140" r="3" fill="rgba(255,255,255,0.2)"/>
-        </svg>
-
-        {/* Texte */}
-        <h2 style={{ fontSize: '26px', fontWeight: 700, marginBottom: '14px', textAlign: 'center', lineHeight: 1.3 }}>
-          Connectez-vous à votre espace
-        </h2>
-        <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.75)', textAlign: 'center', lineHeight: 1.7, maxWidth: '320px' }}>
-          Accédez à vos commandes, suivez vos livraisons et gérez vos rendez-vous en temps réel.
-        </p>
       </div>
 
       {/* ---- Panneau droit (formulaire) ---- */}
@@ -255,7 +275,9 @@ export default function LoginPage() {
           padding: '48px 56px',
           background: '#fff',
           boxShadow: '-4px 0 24px rgba(0,0,0,0.06)',
+          overflowY: 'auto',
         }}
+        className="right-panel"
       >
         <div style={{ width: '100%', maxWidth: '360px' }}>
 
@@ -406,8 +428,6 @@ export default function LoginPage() {
               }}
               onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.background = '#1d4ed8'; }}
               onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.background = '#2563eb'; }}
-              onMouseDown={(e) => { if (!isLoading) e.currentTarget.style.transform = 'scale(0.99)'; }}
-              onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
             >
               {isLoading ? (
                 <>
@@ -439,11 +459,24 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Responsive */}
+      {/* Styles responsive */}
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 768px) {
-          .left-panel { display: none !important; }
+        
+        @media (max-width: 900px) {
+          .left-panel {
+            display: none !important;
+          }
+          .right-panel {
+            width: 100% !important;
+            padding: 48px 24px !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .right-panel {
+            padding: 32px 20px !important;
+          }
         }
       `}</style>
     </div>

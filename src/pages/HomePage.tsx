@@ -275,7 +275,7 @@ export default function HomePage() {
               style={{
                 flex: 1, padding: '10px 14px',
                 border: '1.5px solid #e5e7eb', borderRadius: '9px',
-                fontSize: '14px', color: '#111827', outline: 'none',
+                fontSize: '14px', color: '#ffffff', outline: 'none',
                 transition: 'border-color 0.15s',
               }}
               onFocus={(e) => (e.target.style.borderColor = '#2563eb')}

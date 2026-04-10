@@ -588,7 +588,7 @@ export default function RecherchePage() {
                 style={{
                   padding: '9px 12px', border: '1.5px solid #e5e7eb',
                   borderRadius: '8px', fontSize: '13px', outline: 'none',
-                  color: '#111827', transition: 'border-color 0.15s',
+                  color: '#ffffff', transition: 'border-color 0.15s',
                 }}
                 onFocus={(e) => (e.target.style.borderColor = '#2563eb')}
                 onBlur={(e)  => (e.target.style.borderColor = '#e5e7eb')}
@@ -608,7 +608,7 @@ export default function RecherchePage() {
                 style={{
                   padding: '9px 12px', border: '1.5px solid #e5e7eb',
                   borderRadius: '8px', fontSize: '13px', outline: 'none',
-                  color: '#111827', transition: 'border-color 0.15s',
+                  color: '#ffffff', transition: 'border-color 0.15s',
                 }}
                 onFocus={(e) => (e.target.style.borderColor = '#2563eb')}
                 onBlur={(e)  => (e.target.style.borderColor = '#e5e7eb')}
@@ -626,7 +626,7 @@ export default function RecherchePage() {
                 style={{
                   padding: '9px 12px', border: '1.5px solid #e5e7eb',
                   borderRadius: '8px', fontSize: '13px', outline: 'none',
-                  color: filtres.type ? '#111827' : '#9ca3af',
+                  color: filtres.type ? '#ffffff' : '#9ca3af',
                   background: '#fff', transition: 'border-color 0.15s',
                 }}
                 onFocus={(e) => (e.target.style.borderColor = '#2563eb')}
@@ -653,7 +653,7 @@ export default function RecherchePage() {
                 style={{
                   padding: '9px 12px', border: '1.5px solid #e5e7eb',
                   borderRadius: '8px', fontSize: '13px', outline: 'none',
-                  color: '#111827', transition: 'border-color 0.15s',
+                  color: '#ffffff', transition: 'border-color 0.15s',
                 }}
                 onFocus={(e) => (e.target.style.borderColor = '#2563eb')}
                 onBlur={(e)  => (e.target.style.borderColor = '#e5e7eb')}
@@ -675,7 +675,7 @@ export default function RecherchePage() {
                 style={{
                   padding: '9px 12px', border: '1.5px solid #e5e7eb',
                   borderRadius: '8px', fontSize: '13px', outline: 'none',
-                  color: '#111827', transition: 'border-color 0.15s',
+                  color: '#ffffff', transition: 'border-color 0.15s',
                 }}
                 onFocus={(e) => (e.target.style.borderColor = '#2563eb')}
                 onBlur={(e)  => (e.target.style.borderColor = '#e5e7eb')}
