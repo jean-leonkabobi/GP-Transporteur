@@ -113,6 +113,22 @@ export default function LoginPage() {
   const [form, setForm] = useState<LoginPayload>({ email: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<Partial<LoginPayload>>({});
 
+  // ============================================================
+  // COMPTES DE DÉMO PERSONNALISÉS
+  // ============================================================
+  const demoAccounts = {
+    client: {
+      email: 'ndeyelo@client.com',
+      password: 'password123',
+      name: 'Ndeye Lo'
+    },
+    transporteur: {
+      email: 'jeanleon@transporteur.com',
+      password: 'password123',
+      name: 'Jean Léon'
+    }
+  };
+
   // Nettoie l'erreur globale quand l'utilisateur retape
   useEffect(() => {
     if (error) clearError();
@@ -151,12 +167,13 @@ export default function LoginPage() {
   };
 
   // ----------------------------------------------------------
-  // COMPTES DE DÉMO
+  // COMPTES DE DÉMO (version modifiée)
   // ----------------------------------------------------------
   const fillDemo = (role: 'client' | 'transporteur') => {
+    const account = demoAccounts[role];
     setForm({
-      email: role === 'client' ? 'client@demo.com' : 'transporteur@demo.com',
-      password: 'password123',
+      email: account.email,
+      password: account.password,
     });
     setFieldErrors({});
   };
@@ -294,7 +311,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Comptes démo */}
+          {/* Comptes démo - Version avec les nouveaux comptes */}
           <div
             style={{
               background: '#f0f9ff',
@@ -326,7 +343,7 @@ export default function LoginPage() {
                 onMouseEnter={(e) => (e.currentTarget.style.background = '#e0f2fe')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = '#fff')}
               >
-                Client demo
+                {demoAccounts.client.name} (Client)
               </button>
               <button
                 type="button"
@@ -346,8 +363,22 @@ export default function LoginPage() {
                 onMouseEnter={(e) => (e.currentTarget.style.background = '#e0f2fe')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = '#fff')}
               >
-                Transporteur demo
+                {demoAccounts.transporteur.name} (Transporteur)
               </button>
+            </div>
+            {/* Affichage des emails en petit */}
+            <div style={{ 
+              fontSize: '10px', 
+              color: '#6b7280', 
+              marginTop: '8px',
+              textAlign: 'center',
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px'
+            }}>
+              <span>{demoAccounts.client.email}</span>
+              <span>•</span>
+              <span>{demoAccounts.transporteur.email}</span>
             </div>
           </div>
 

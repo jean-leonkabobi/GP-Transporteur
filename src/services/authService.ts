@@ -17,10 +17,10 @@ const fakeDelay = (ms = 800) => new Promise((res) => setTimeout(res, ms));
 const MOCK_USERS: (User & { password: string })[] = [
   {
     id: 'usr-001',
-    email: 'client@demo.com',
+    email: 'ndeyelo@client.com',  // ← MODIFIÉ
     password: 'password123',
-    nom: 'Diallo',
-    prenom: 'Amadou',
+    nom: 'Lo',                      // ← MODIFIÉ
+    prenom: 'Ndeye',                // ← MODIFIÉ
     role: 'client',
     telephone: '+221 77 000 00 01',
     adresse: 'Dakar, Sénégal',
@@ -28,10 +28,10 @@ const MOCK_USERS: (User & { password: string })[] = [
   },
   {
     id: 'usr-002',
-    email: 'transporteur@demo.com',
+    email: 'jeanleon@transporteur.com',  // ← MODIFIÉ
     password: 'password123',
-    nom: 'Ndiaye',
-    prenom: 'Fatou',
+    nom: 'Léon',                          // ← MODIFIÉ
+    prenom: 'Jean',                       // ← MODIFIÉ
     role: 'transporteur',
     telephone: '+221 77 000 00 02',
     adresse: 'Thiès, Sénégal',

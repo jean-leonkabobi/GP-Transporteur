@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useCurrentUser } from '../hooks/useAuth';
 
 // ============================================================
@@ -35,6 +35,31 @@ interface FormCommande {
 type FieldErrors = Partial<Record<keyof FormCommande, string>>;
 
 // ============================================================
+// FONCTION POUR RÉCUPÉRER LE TÉLÉPHONE D'UN TRANSPORTEUR
+// ============================================================
+const getTransporteurTel = (id: string): string => {
+  const tels: Record<string, string> = {
+    'tr-001': '+221 77 111 22 33',
+    'tr-002': '+221 77 222 33 44',
+    'tr-003': '+221 77 333 44 55',
+    'tr-004': '+221 77 444 55 66',
+    'tr-005': '+221 77 555 66 77',
+    'tr-006': '+221 77 666 77 88',
+    'usr-002': '+221 77 000 00 02',
+  };
+  return tels[id] || '+221 77 000 00 00';
+};
+
+const OPTIONS_LIVRAISON = [
+  { value: 'same_day', label: '🚀 Le même jour', hours: 0 },
+  { value: '6h', label: '⏱️ Dans 6 heures', hours: 6 },
+  { value: '10h', label: '⏱️ Dans 10 heures', hours: 10 },
+  { value: '12h', label: '⏱️ Dans 12 heures', hours: 12 },
+  { value: 'soiree', label: '🌙 En soirée (18h-22h)', hours: 18 },
+  { value: 'lendemain_matin', label: '🌅 Le lendemain matin', hours: 24 },
+];
+
+// ============================================================
 // MOCK TRANSPORTEURS
 // ============================================================
 const MOCK_TRANSPORTEURS: Transporteur[] = [
@@ -44,6 +69,7 @@ const MOCK_TRANSPORTEURS: Transporteur[] = [
   { id: 'tr-004', nom: 'Trans Ziguinchor',         photo: 'TZ', prix: 2500, delai: '2-3 jours',  note: 4.6, vehicule: 'Camion 10T',  zones: ['Ziguinchor', 'Kolda'] },
   { id: 'tr-005', nom: 'Rapid Livraison Dakar',    photo: 'RL', prix: 500,  delai: 'Même jour',  note: 4.9, vehicule: 'Moto',        zones: ['Dakar', 'Pikine'] },
   { id: 'tr-006', nom: 'Touba Transport Plus',     photo: 'TP', prix: 1800, delai: '1-2 jours',  note: 4.3, vehicule: 'Camion 5T',   zones: ['Touba', 'Diourbel'] },
+  { id: 'usr-002', nom: 'Jean Léon',               photo: 'JL', prix: 950,  delai: '1 jour',     note: 4.7, vehicule: 'Camion 20T',   zones: ['Dakar', 'Thiès', 'Ziguinchor', 'Mbour', 'Fatick', 'Saint-Louis', 'Louga', 'Kaolack'] },
 ];
 
 const TYPES_MARCHANDISE = [
@@ -547,15 +573,73 @@ export default function NouvelleCommandePage() {
   };
 
   // ----------------------------------------------------------
-  // CONFIRMATION FINALE
+  // CONFIRMATION FINALE (MISE À JOUR AVEC IDS)
   // ----------------------------------------------------------
   const handleConfirmer = async () => {
+    // Vérifier qu'un transporteur est sélectionné
+    if (!transporteurSelectionne) {
+      alert('Veuillez sélectionner un transporteur');
+      return;
+    }
+
     setLoading(true);
-    // Simule appel API
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    // Redirige vers les commandes avec un message de succès
-    navigate('/commandes', { state: { success: 'Commande créée avec succès !' } });
+    
+    try {
+      // Récupérer l'utilisateur connecté (le client)
+      const userStr = localStorage.getItem('current_user');
+      let userInfo = { 
+        prenom: 'Client', 
+        nom: 'Test', 
+        telephone: '+221 77 000 00 00', 
+        id: 'client-001' 
+      };
+      
+      if (userStr) {
+        try {
+          userInfo = JSON.parse(userStr);
+        } catch(e) {
+          console.error('Erreur parsing user:', e);
+        }
+      }
+      
+      // Créer la nouvelle commande avec les IDs pour le routage
+      const nouvelleCommande = {
+        id: `CMD-${String(Date.now()).slice(-6)}`,
+        origine: form.adresseCollecte.split(',')[0] || form.adresseCollecte,
+        destination: form.destination,
+        statut: 'En attente',
+        date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, ''),
+        transporteur: transporteurSelectionne.nom,
+        transporteurId: transporteurSelectionne.id,  // ← AJOUTÉ : ID du transporteur
+        transporteurTel: getTransporteurTel(form.transporteurId),
+        client: `${userInfo.prenom} ${userInfo.nom}`,
+        clientId: userInfo.id || 'client-001',  // ← AJOUTÉ : ID du client
+        clientTel: userInfo.telephone,
+        type: form.type,
+        poids: parseFloat(form.poids),
+        volume: form.volume ? parseFloat(form.volume) : 0,
+        prix: prixTotal,
+        description: form.description,
+        createdAt: new Date().toISOString(),  // ← AJOUTÉ : date de création
+      };
+      
+      // Récupérer les commandes existantes dans localStorage
+      const commandesExistantes = JSON.parse(localStorage.getItem('commandes_mock') || '[]');
+      commandesExistantes.push(nouvelleCommande);
+      localStorage.setItem('commandes_mock', JSON.stringify(commandesExistantes));
+      
+      // Rediriger vers les commandes avec message de succès
+      navigate('/commandes', { 
+        state: { 
+          success: `Commande ${nouvelleCommande.id} créée avec succès !` 
+        } 
+      });
+    } catch (error) {
+      console.error('Erreur lors de la création:', error);
+      alert('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ----------------------------------------------------------

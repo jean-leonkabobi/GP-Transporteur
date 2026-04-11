@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useHasRole } from '../hooks/useAuth';
 
 // ============================================================
@@ -20,20 +20,23 @@ interface Commande {
   date: string;
   datelivraison?: string;
   transporteur: string;
+  transporteurId?: string;
   transporteurTel: string;
   client: string;
+  clientId?: string;
   clientTel: string;
   type: string;
   poids: number;
   volume: number;
   prix: number;
   description?: string;
+  createdAt?: string;
 }
 
 // ============================================================
-// DONNÉES MOCK
+// DONNÉES MOCK INITIALES (avec IDs)
 // ============================================================
-const MOCK_COMMANDES: Commande[] = [
+const MOCK_COMMANDES_INITIALES: Commande[] = [
   {
     id: 'CMD-001',
     origine: 'Dakar',
@@ -42,14 +45,17 @@ const MOCK_COMMANDES: Commande[] = [
     date: '08 avr. 2026',
     datelivraison: '09 avr. 2026',
     transporteur: 'Ndiaye Express',
+    transporteurId: 'tr-001',
     transporteurTel: '+221 77 111 22 33',
     client: 'Amadou Diallo',
+    clientId: 'client-001',
     clientTel: '+221 77 000 00 01',
     type: 'Colis standard',
     poids: 25,
     volume: 0.5,
     prix: 21250,
     description: 'Cartons de vêtements, fragiles',
+    createdAt: '2026-04-08T10:00:00Z',
   },
   {
     id: 'CMD-002',
@@ -59,14 +65,17 @@ const MOCK_COMMANDES: Commande[] = [
     date: '05 avr. 2026',
     datelivraison: '06 avr. 2026',
     transporteur: 'Sénégal Transport Co.',
+    transporteurId: 'tr-002',
     transporteurTel: '+221 77 222 33 44',
     client: 'Amadou Diallo',
+    clientId: 'client-001',
     clientTel: '+221 77 000 00 01',
     type: 'Marchandises fragiles',
     poids: 10,
     volume: 0.3,
     prix: 12000,
     description: 'Équipement électronique',
+    createdAt: '2026-04-05T09:00:00Z',
   },
   {
     id: 'CMD-003',
@@ -75,14 +84,17 @@ const MOCK_COMMANDES: Commande[] = [
     statut: 'En attente',
     date: '03 avr. 2026',
     transporteur: '—',
+    transporteurId: '',
     transporteurTel: '—',
     client: 'Amadou Diallo',
+    clientId: 'client-001',
     clientTel: '+221 77 000 00 01',
     type: 'Produits alimentaires',
     poids: 80,
     volume: 2,
     prix: 200000,
     description: 'Sacs de riz, denrées alimentaires',
+    createdAt: '2026-04-03T08:00:00Z',
   },
   {
     id: 'CMD-004',
@@ -91,15 +103,18 @@ const MOCK_COMMANDES: Commande[] = [
     statut: 'Confirmée',
     date: '09 avr. 2026',
     datelivraison: '10 avr. 2026',
-    transporteur: 'Ndiaye Express',
-    transporteurTel: '+221 77 111 22 33',
+    transporteur: 'Jean Léon',
+    transporteurId: 'usr-002',
+    transporteurTel: '+221 77 000 00 02',
     client: 'Mariama Sow',
+    clientId: 'client-002',
     clientTel: '+221 77 999 88 77',
     type: 'Textile / Vêtements',
     poids: 15,
     volume: 0.4,
     prix: 12750,
     description: 'Rouleaux de tissu',
+    createdAt: '2026-04-09T11:00:00Z',
   },
   {
     id: 'CMD-005',
@@ -108,14 +123,17 @@ const MOCK_COMMANDES: Commande[] = [
     statut: 'Annulée',
     date: '01 avr. 2026',
     transporteur: 'Diallo & Frères',
+    transporteurId: 'tr-003',
     transporteurTel: '+221 77 333 44 55',
     client: 'Ibrahima Fall',
+    clientId: 'client-003',
     clientTel: '+221 77 888 77 66',
     type: 'Matériaux de construction',
     poids: 200,
     volume: 5,
     prix: 140000,
     description: 'Ciment et briques',
+    createdAt: '2026-04-01T07:00:00Z',
   },
   {
     id: 'CMD-006',
@@ -125,16 +143,30 @@ const MOCK_COMMANDES: Commande[] = [
     date: '07 avr. 2026',
     datelivraison: '09 avr. 2026',
     transporteur: 'Ndiaye Express',
+    transporteurId: 'tr-001',
     transporteurTel: '+221 77 111 22 33',
     client: 'Fatou Ndiaye',
+    clientId: 'client-004',
     clientTel: '+221 77 777 66 55',
     type: 'Électroménager',
     poids: 45,
     volume: 1.2,
     prix: 38250,
     description: 'Réfrigérateur et machine à laver',
+    createdAt: '2026-04-07T12:00:00Z',
   },
 ];
+
+// Initialiser localStorage avec les commandes mock si vide
+const getInitialCommandes = (): Commande[] => {
+  const saved = localStorage.getItem('commandes_mock');
+  if (saved && JSON.parse(saved).length > 0) {
+    return JSON.parse(saved);
+  }
+  // Sauvegarder les commandes initiales dans localStorage
+  localStorage.setItem('commandes_mock', JSON.stringify(MOCK_COMMANDES_INITIALES));
+  return MOCK_COMMANDES_INITIALES;
+};
 
 // ============================================================
 // CONFIG STATUTS
@@ -246,6 +278,8 @@ function DetailPanel({
   isTransporteur,
   onClose,
   onAnnuler,
+  onAccepter,
+  onRefuser,
   onTelecharger,
   onContacter,
 }: {
@@ -253,11 +287,14 @@ function DetailPanel({
   isTransporteur: boolean;
   onClose: () => void;
   onAnnuler: () => void;
+  onAccepter?: () => void;
+  onRefuser?: () => void;
   onTelecharger: () => void;
   onContacter: () => void;
 }) {
   const cfg = STATUT_CONFIG[commande.statut];
   const peutAnnuler = ['En attente', 'Confirmée'].includes(commande.statut);
+  const peutAccepter = isTransporteur && commande.statut === 'En attente';
 
   return (
     <div style={{
@@ -380,6 +417,51 @@ function DetailPanel({
               Actions
             </h3>
 
+            {/* Boutons Accepter/Refuser pour le transporteur */}
+            {peutAccepter && onAccepter && onRefuser && (
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={onAccepter}
+                  style={{
+                    flex: 1, padding: '11px',
+                    background: '#16a34a', color: '#fff',
+                    border: 'none', borderRadius: '9px',
+                    fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '8px',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#15803d')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '#16a34a')}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Accepter
+                </button>
+                <button
+                  onClick={onRefuser}
+                  style={{
+                    flex: 1, padding: '11px',
+                    background: '#dc2626', color: '#fff',
+                    border: 'none', borderRadius: '9px',
+                    fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '8px',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#b91c1c')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '#dc2626')}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  Refuser
+                </button>
+              </div>
+            )}
+
             {/* Contacter */}
             <button
               onClick={onContacter}
@@ -430,8 +512,8 @@ function DetailPanel({
               Télécharger le bon de commande
             </button>
 
-            {/* Annuler */}
-            {peutAnnuler && (
+            {/* Annuler (pour le client ou transporteur selon le cas) */}
+            {peutAnnuler && !peutAccepter && (
               <button
                 onClick={onAnnuler}
                 style={{
@@ -503,25 +585,81 @@ function InfoRow({ label, value, highlight }: { label: string; value: string; hi
 // ============================================================
 export default function CommandePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const isTransporteur = useHasRole('transporteur');
 
   const [ongletActif, setOngletActif] = useState<StatutCommande | 'Toutes'>('Toutes');
   const [selectedCommande, setSelectedCommande] = useState<Commande | null>(null);
-  const [commandes, setCommandes] = useState<Commande[]>(MOCK_COMMANDES);
+  const [commandes, setCommandes] = useState<Commande[]>(getInitialCommandes());
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Charger l'utilisateur connecté
+  useEffect(() => {
+    const userStr = localStorage.getItem('current_user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setCurrentUser(user);
+      } catch(e) {
+        console.error('Erreur parsing user:', e);
+      }
+    }
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Filtre par onglet + recherche
+  // Afficher le toast de succès si présent (quand on revient de nouvelle commande)
+  useEffect(() => {
+    if (location.state?.success) {
+      showToast(location.state.success, 'success');
+      // Nettoyer le state pour ne pas afficher le message au rechargement
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
+
+  // Sauvegarder les commandes dans localStorage quand elles changent
+  useEffect(() => {
+    localStorage.setItem('commandes_mock', JSON.stringify(commandes));
+  }, [commandes]);
+
+  // Filtrer les commandes selon le rôle + onglet + recherche
   const commandesFiltrees = commandes.filter((c) => {
+    // Filtre par rôle (client vs transporteur)
+    if (currentUser) {
+      if (isTransporteur) {
+        // Transporteur : voir seulement les commandes qui lui sont destinées
+        if (c.transporteurId && c.transporteurId !== currentUser.id) {
+          return false;
+        }
+        // Pour les commandes sans transporteurId, vérifier par le nom
+        if (!c.transporteurId && c.transporteur !== currentUser.nom && c.transporteur !== `${currentUser.prenom} ${currentUser.nom}`) {
+          return false;
+        }
+      } else {
+        // Client : voir seulement ses propres commandes
+        if (c.clientId && c.clientId !== currentUser.id) {
+          return false;
+        }
+        // Pour les commandes sans clientId, vérifier par le nom
+        if (!c.clientId && c.client !== `${currentUser.prenom} ${currentUser.nom}` && c.client !== currentUser.nom) {
+          return false;
+        }
+      }
+    }
+
+    // Filtre par onglet
     const matchOnglet = ongletActif === 'Toutes' || c.statut === ongletActif;
+    
+    // Filtre par recherche
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || [c.id, c.destination, c.origine, c.transporteur, c.client]
       .some((v) => v.toLowerCase().includes(q));
+    
     return matchOnglet && matchSearch;
   });
 
@@ -540,6 +678,28 @@ export default function CommandePage() {
     showToast('Commande annulée avec succès.');
   };
 
+  // Accepter une commande (pour le transporteur)
+  const handleAccepterCommande = (id: string) => {
+    setCommandes((prev) =>
+      prev.map((c) => 
+        c.id === id ? { ...c, statut: 'Confirmée' as StatutCommande } : c
+      )
+    );
+    setSelectedCommande(null);
+    showToast('Commande acceptée avec succès. Le client sera notifié.');
+  };
+
+  // Refuser une commande (pour le transporteur)
+  const handleRefuserCommande = (id: string) => {
+    setCommandes((prev) =>
+      prev.map((c) => 
+        c.id === id ? { ...c, statut: 'Annulée' as StatutCommande } : c
+      )
+    );
+    setSelectedCommande(null);
+    showToast('Commande refusée.', 'error');
+  };
+
   const handleTelecharger = (id: string) => {
     showToast(`Bon de commande ${id} téléchargé.`);
   };
@@ -550,12 +710,25 @@ export default function CommandePage() {
     showToast(`Appel vers ${nom} — ${tel}`);
   };
 
-  // Résumé stats
+  // Résumé stats (filtrées par rôle aussi)
+  const commandesFiltreesPourStats = commandes.filter((c) => {
+    if (currentUser) {
+      if (isTransporteur) {
+        if (c.transporteurId && c.transporteurId !== currentUser.id) return false;
+        if (!c.transporteurId && c.transporteur !== currentUser.nom && c.transporteur !== `${currentUser.prenom} ${currentUser.nom}`) return false;
+      } else {
+        if (c.clientId && c.clientId !== currentUser.id) return false;
+        if (!c.clientId && c.client !== `${currentUser.prenom} ${currentUser.nom}` && c.client !== currentUser.nom) return false;
+      }
+    }
+    return true;
+  });
+
   const stats = [
-    { label: 'Total', value: commandes.length, color: '#374151', bg: '#f1f5f9' },
-    { label: 'En cours', value: commandes.filter((c) => c.statut === 'En cours').length, color: '#2563eb', bg: '#eff6ff' },
-    { label: 'En attente', value: commandes.filter((c) => c.statut === 'En attente').length, color: '#d97706', bg: '#fffbeb' },
-    { label: 'Livrées', value: commandes.filter((c) => c.statut === 'Livré').length, color: '#16a34a', bg: '#f0fdf4' },
+    { label: 'Total', value: commandesFiltreesPourStats.length, color: '#374151', bg: '#f1f5f9' },
+    { label: 'En cours', value: commandesFiltreesPourStats.filter((c) => c.statut === 'En cours').length, color: '#2563eb', bg: '#eff6ff' },
+    { label: 'En attente', value: commandesFiltreesPourStats.filter((c) => c.statut === 'En attente').length, color: '#d97706', bg: '#fffbeb' },
+    { label: 'Livrées', value: commandesFiltreesPourStats.filter((c) => c.statut === 'Livré').length, color: '#16a34a', bg: '#f0fdf4' },
   ];
 
   return (
@@ -772,6 +945,8 @@ export default function CommandePage() {
           isTransporteur={isTransporteur}
           onClose={() => setSelectedCommande(null)}
           onAnnuler={() => handleAnnuler(selectedCommande.id)}
+          onAccepter={() => handleAccepterCommande(selectedCommande.id)}
+          onRefuser={() => handleRefuserCommande(selectedCommande.id)}
           onTelecharger={() => handleTelecharger(selectedCommande.id)}
           onContacter={() => handleContacter(selectedCommande)}
         />
